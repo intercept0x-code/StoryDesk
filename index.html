@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#111827" />
+  <title>StoryDesk</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="app" class="app-shell">
+    <header class="topbar">
+      <div class="brand-wrap">
+        <button class="icon-btn mobile-only" id="mobileNavBtn" aria-label="Open chapter list">☰</button>
+        <div class="brand-mark">S</div>
+        <div>
+          <div class="brand">StoryDesk</div>
+          <div class="brand-sub">A quiet room for loud ideas.</div>
+        </div>
+      </div>
+
+      <div class="top-actions">
+        <button class="ghost-btn" id="searchBtn" title="Search (Ctrl/Cmd + K)">⌕ <span>Search</span></button>
+        <button class="ghost-btn" id="focusBtn" title="Focus mode">◫ <span>Focus</span></button>
+        <button class="ghost-btn" id="shelfToggleBtn" title="Toggle Idea Shelf (Ctrl/Cmd + Shift + I)">✦ <span>Ideas</span></button>
+        <button class="icon-btn" id="themeBtn" title="Toggle theme" aria-label="Toggle theme">◐</button>
+        <button class="primary-btn" id="newProjectBtn">+ Project</button>
+      </div>
+    </header>
+
+    <div class="workspace">
+      <aside class="sidebar" id="sidebar">
+        <div class="sidebar-section project-switcher-wrap">
+          <label class="eyebrow" for="projectSelect">Project</label>
+          <select id="projectSelect" class="project-select"></select>
+          <div class="project-mini-actions">
+            <button class="mini-btn" id="editProjectBtn">Edit project</button>
+            <button class="mini-btn danger-text" id="deleteProjectBtn">Delete</button>
+          </div>
+        </div>
+
+        <div class="sidebar-section project-overview" id="projectOverview">
+          <div class="eyebrow">Overview</div>
+          <div class="project-description" id="projectDescription">No project selected.</div>
+          <div class="goal-row">
+            <div>
+              <span id="projectWordCount">0</span>
+              <span class="muted">words</span>
+            </div>
+            <div class="muted" id="goalLabel">No goal</div>
+          </div>
+          <div class="goal-track"><div class="goal-fill" id="goalFill"></div></div>
+        </div>
+
+        <div class="sidebar-section chapter-section">
+          <div class="section-title-row">
+            <div>
+              <div class="eyebrow">Manuscript</div>
+              <div class="section-title">Chapters</div>
+            </div>
+            <button class="round-btn" id="addChapterBtn" title="Add chapter">+</button>
+          </div>
+          <div class="chapter-filter-wrap">
+            <input id="chapterFilter" type="search" placeholder="Filter chapters…" autocomplete="off" />
+          </div>
+          <div id="chapterList" class="chapter-list"></div>
+        </div>
+
+        <div class="sidebar-footer">
+          <button class="side-footer-btn" id="exportBtn">⇩ Export</button>
+          <button class="side-footer-btn" id="importBtn">⇧ Import</button>
+          <input id="importFile" type="file" accept="application/json,.json" hidden />
+        </div>
+      </aside>
+
+      <main class="editor-pane" id="editorPane">
+        <div class="empty-state" id="emptyState">
+          <div class="empty-icon">✎</div>
+          <h1>Start a story.</h1>
+          <p>Create a project, split it into chapters, and throw every stray thought onto the Idea Shelf before it disappears.</p>
+          <button class="primary-btn large" id="emptyCreateBtn">Create your first project</button>
+        </div>
+
+        <section class="editor-shell hidden" id="editorShell">
+          <div class="chapter-meta-bar">
+            <div class="breadcrumb" id="breadcrumb">Project / Chapter</div>
+            <div class="chapter-status-row">
+              <label for="chapterStatus">Status</label>
+              <select id="chapterStatus">
+                <option value="Planning">Planning</option>
+                <option value="Drafting">Drafting</option>
+                <option value="Revising">Revising</option>
+                <option value="Final">Final</option>
+              </select>
+              <button class="icon-btn" id="chapterMenuBtn" title="Chapter actions">•••</button>
+              <div class="popover hidden" id="chapterMenu">
+                <button data-action="rename">Rename chapter</button>
+                <button data-action="duplicate">Duplicate chapter</button>
+                <button data-action="move-up">Move up</button>
+                <button data-action="move-down">Move down</button>
+                <button class="danger-text" data-action="delete">Delete chapter</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="writing-header">
+            <input id="chapterTitle" class="chapter-title-input" value="Chapter" aria-label="Chapter title" />
+            <div class="writing-stats">
+              <span id="chapterWordCount">0 words</span>
+              <span>•</span>
+              <span id="readTime">0 min read</span>
+              <span>•</span>
+              <span id="saveState">Saved</span>
+            </div>
+          </div>
+
+          <div class="format-toolbar" id="formatToolbar">
+            <button data-cmd="bold" title="Bold"><strong>B</strong></button>
+            <button data-cmd="italic" title="Italic"><em>I</em></button>
+            <button data-cmd="formatBlock" data-value="H2" title="Subheading">H₂</button>
+            <button data-cmd="formatBlock" data-value="BLOCKQUOTE" title="Block quote">❝</button>
+            <button data-insert="em-dash" title="Insert em dash">—</button>
+            <button data-insert="scene-break" title="Insert scene break">⁂</button>
+            <span class="toolbar-spacer"></span>
+            <button id="toggleNotesBtn" title="Chapter notes">Notes</button>
+          </div>
+
+          <div class="editor-scroll">
+            <article id="editor" class="editor" contenteditable="true" spellcheck="true" data-placeholder="Write the chapter here…"></article>
+            <section id="chapterNotesPanel" class="chapter-notes-panel hidden">
+              <div class="notes-label">Chapter notes</div>
+              <textarea id="chapterNotes" placeholder="What needs to happen here? Continuity reminders? A line you don't want to forget?"></textarea>
+            </section>
+          </div>
+
+          <footer class="editor-footer">
+            <div class="footer-left">
+              <span id="chapterCharCount">0 characters</span>
+            </div>
+            <div class="footer-right">
+              <span class="keyboard-hint">Ctrl/Cmd + K search</span>
+            </div>
+          </footer>
+        </section>
+      </main>
+
+      <aside class="idea-shelf" id="ideaShelf">
+        <div class="shelf-header">
+          <div>
+            <div class="eyebrow">Scratch space</div>
+            <div class="section-title">Idea Shelf</div>
+          </div>
+          <button class="icon-btn" id="closeShelfBtn" title="Hide shelf">×</button>
+        </div>
+
+        <div class="shelf-controls">
+          <div class="idea-type-tabs" id="ideaTypeTabs">
+            <button class="active" data-type="All">All</button>
+            <button data-type="Idea">Ideas</button>
+            <button data-type="Thread">Threads</button>
+            <button data-type="Fix">Fix later</button>
+          </div>
+          <input id="ideaSearch" type="search" placeholder="Search ideas…" />
+        </div>
+
+        <form id="ideaForm" class="idea-form">
+          <textarea id="ideaInput" rows="3" placeholder="Drop a thought here before it escapes…"></textarea>
+          <div class="idea-form-row">
+            <select id="ideaType">
+              <option value="Idea">Idea</option>
+              <option value="Plot">Plot</option>
+              <option value="Character">Character</option>
+              <option value="World">World</option>
+              <option value="Thread">Thread to follow</option>
+              <option value="Research">Research</option>
+              <option value="Fix">Fix later</option>
+            </select>
+            <button class="primary-btn" type="submit">Add</button>
+          </div>
+        </form>
+
+        <div class="shelf-subhead">
+          <span id="ideaCountLabel">0 notes</span>
+          <button class="text-btn" id="clearDoneIdeasBtn">Clear done</button>
+        </div>
+        <div id="ideaList" class="idea-list"></div>
+      </aside>
+    </div>
+  </div>
+
+  <div class="modal-backdrop hidden" id="modalBackdrop">
+    <div class="modal" id="projectModal">
+      <div class="modal-header">
+        <div>
+          <div class="eyebrow">Story setup</div>
+          <h2 id="projectModalTitle">New project</h2>
+        </div>
+        <button class="icon-btn" id="closeProjectModal">×</button>
+      </div>
+      <form id="projectForm">
+        <label>
+          Project name
+          <input id="projectNameInput" required maxlength="120" placeholder="The impossible summer" />
+        </label>
+        <label>
+          Description
+          <textarea id="projectDescriptionInput" rows="4" placeholder="A quick summary, premise, or north star for the story."></textarea>
+        </label>
+        <label>
+          Word goal <span class="muted">(optional)</span>
+          <input id="projectGoalInput" type="number" min="0" step="1000" placeholder="80000" />
+        </label>
+        <div class="modal-actions">
+          <button type="button" class="ghost-btn" id="cancelProjectModal">Cancel</button>
+          <button type="submit" class="primary-btn">Save project</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-backdrop hidden" id="chapterModalBackdrop">
+    <div class="modal small-modal">
+      <div class="modal-header">
+        <div>
+          <div class="eyebrow">Manuscript</div>
+          <h2 id="chapterModalTitle">New chapter</h2>
+        </div>
+        <button class="icon-btn" id="closeChapterModal">×</button>
+      </div>
+      <form id="chapterForm">
+        <label>
+          Chapter name
+          <input id="chapterNameInput" required maxlength="160" placeholder="Chapter 1" />
+        </label>
+        <div class="modal-actions">
+          <button type="button" class="ghost-btn" id="cancelChapterModal">Cancel</button>
+          <button type="submit" class="primary-btn">Save chapter</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="search-overlay hidden" id="searchOverlay">
+    <div class="search-box">
+      <div class="search-input-row">
+        <span>⌕</span>
+        <input id="globalSearchInput" placeholder="Search chapters, notes, and ideas…" autocomplete="off" />
+        <button class="keycap" id="closeSearchBtn">Esc</button>
+      </div>
+      <div id="searchResults" class="search-results"></div>
+    </div>
+  </div>
+
+  <div class="toast-stack" id="toastStack"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

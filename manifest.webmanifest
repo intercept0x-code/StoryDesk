@@ -1,0 +1,9 @@
+{
+  "name": "StoryDesk",
+  "short_name": "StoryDesk",
+  "description": "A focused story-writing notebook for projects, chapters, and ideas.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f6f4ef",
+  "theme_color": "#111827"
+}
